@@ -120,19 +120,36 @@ POSS.getArticless_result = function(r){
 }
 
 
+POSS.timestamp_last_transaction = new Date();
+POSS.badge_id_last_transaction = 0;
+POSS.csvArticles = "";
 
 POSS.transaction = function(badge){
-    var csvArticles = "";
+    var last_csvArticles = POSS.csvArticles;
+    POSS.csvArticles = "";
     for(var i=0;i<lignes.length;i++){
       for(var j=0;j<lignes[i].quantite;j++)
-        csvArticles = csvArticles + lignes[i].article + " "; 
+        POSS.csvArticles += lignes[i].article + " ";
     }
 
-    doRequest("transaction", {
-        badge_id: badge,
-        obj_ids: csvArticles},
-      POSS.transaction_result);
-}
+    var now = new Date(),
+        same_badge = POSS.badge_id_last_transaction == badge,
+        same_articles = last_csvArticles == POSS.csvArticles,
+        recently = now - POSS.timestamp_last_transaction < 10*1000;
+
+    if (same_badge && same_articles && recently) {
+      $("#status").html("Vous essayez de badger plusieurs fois pour les mêmes articles et même badge.")
+                  .effect("highlight", {color: "#FF0000"}, 1500, restore);
+    }
+    else {
+      POSS.badge_id_last_transaction = badge;
+      POSS.timestamp_last_transaction = now;
+      doRequest("transaction", {
+          badge_id: badge,
+          obj_ids: POSS.csvArticles},
+        POSS.transaction_result);
+  }
+};
 
 POSS.transaction_result = function(r){
     if(r.success) {
