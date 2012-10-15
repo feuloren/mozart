@@ -1,5 +1,6 @@
 <?php
 
 $_CONF = array(
-	"soap_url" => "https://assos.utc.fr/buckutt/"
+	"soap_url" => "https://my_server/server/",
+	"mozart_url" => "https://my_server/mozart/"
  	);
